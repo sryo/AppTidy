@@ -73,7 +73,9 @@ class StatusBarController: NSObject {
             button.title = "🧹"
             button.imagePosition = .imageLeft
             
-            if let image = NSImage(systemSymbolName: "app.badge.checkmark", accessibilityDescription: "AppTidy") {
+            // Use custom SF Symbol from asset catalog with bold weight
+            let config = NSImage.SymbolConfiguration(pointSize: 0, weight: .bold)
+            if let image = NSImage(named: "custom.xmark.badge.sparkles")?.withSymbolConfiguration(config) {
                 image.isTemplate = true
                 button.image = image
                 button.title = ""
@@ -249,7 +251,7 @@ class AppMenuItemView: NSView {
     init(item: StatusBarController.AppDisplayItem, whitelistManager: WhitelistManager) {
         self.item = item
         self.whitelistManager = whitelistManager
-        super.init(frame: NSRect(x: 0, y: 0, width: 280, height: 26))
+        super.init(frame: NSRect(x: 0, y: 0, width: 280, height: 32))
         
         // Setup tracking area for hover - use activeAlways for menu items
         let options: NSTrackingArea.Options = [.mouseEnteredAndExited, .activeAlways, .inVisibleRect]
@@ -286,9 +288,9 @@ class AppMenuItemView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         
-        // Draw highlight if hovered - uses native menu item selection color
+        // Draw highlight if hovered - uses control accent color
         if isHovered {
-            NSColor.selectedMenuItemColor.setFill()
+            NSColor.controlAccentColor.setFill()
             let insetRect = bounds.insetBy(dx: 4, dy: 2)  // Match native menu padding
             let path = NSBezierPath(roundedRect: insetRect, xRadius: 4, yRadius: 4)
             path.fill()
@@ -299,7 +301,7 @@ class AppMenuItemView: NSView {
         let secondaryColor: NSColor = isHovered ? .selectedMenuItemTextColor : .secondaryLabelColor
         
         // 1. Checkbox (Left) - use native NSButtonCell for perfect appearance
-        let checkboxRect = NSRect(x: 12, y: 5, width: 16, height: 16)
+        let checkboxRect = NSRect(x: 12, y: 8, width: 16, height: 16)
         
         // Create a button cell configured as a checkbox
         let buttonCell = NSButtonCell()
@@ -326,7 +328,7 @@ class AppMenuItemView: NSView {
         
         // 2. App Icon (bigger, 24x24)
         if let icon = item.icon {
-            let iconRect = NSRect(x: 34, y: 1, width: 24, height: 24)
+            let iconRect = NSRect(x: 34, y: 4, width: 24, height: 24)
             icon.draw(in: iconRect)
         }
         
@@ -335,7 +337,7 @@ class AppMenuItemView: NSView {
             .font: NSFont.menuFont(ofSize: 13),
             .foregroundColor: contentColor
         ]
-        let nameRect = NSRect(x: 64, y: 6, width: 160, height: 16)
+        let nameRect = NSRect(x: 64, y: 9, width: 160, height: 16)
         item.name.draw(in: nameRect, withAttributes: nameAttributes)
         
         // 4. Status (Right)
@@ -346,7 +348,7 @@ class AppMenuItemView: NSView {
             ]
             let statusText = "Not Running" as NSString
             let size = statusText.size(withAttributes: statusAttributes)
-            let statusRect = NSRect(x: bounds.width - size.width - 12, y: 7, width: size.width, height: 14)
+            let statusRect = NSRect(x: bounds.width - size.width - 12, y: 10, width: size.width, height: 14)
             statusText.draw(in: statusRect, withAttributes: statusAttributes)
         }
     }
@@ -397,5 +399,16 @@ extension NSImage {
         NSGraphicsContext.current?.cgContext.draw(cgImage, in: rect)
         image.unlockFocus()
         return image
+    }
+    
+    func resized(to newSize: NSSize) -> NSImage {
+        let newImage = NSImage(size: newSize)
+        newImage.lockFocus()
+        self.draw(in: NSRect(origin: .zero, size: newSize),
+                  from: NSRect(origin: .zero, size: self.size),
+                  operation: .copy,
+                  fraction: 1.0)
+        newImage.unlockFocus()
+        return newImage
     }
 }

@@ -189,7 +189,7 @@ struct PermissionsTab: View {
             
             // Accessibility Permission
             PermissionRow(
-                icon: "hand.point.up.left",
+                icon: "accessibility",
                 title: "Accessibility",
                 description: "Required to detect window states and control app lifecycle",
                 isGranted: hasAccessibility,
@@ -286,9 +286,19 @@ struct PermissionRow: View {
 struct AboutTab: View {
     var body: some View {
         VStack(spacing: 15) {
-            Image(systemName: "app.badge.checkmark")
-                .font(.system(size: 60))
-                .foregroundColor(.accentColor)
+            // Use custom SF Symbol from asset catalog
+            if let nsImage = NSImage(named: "custom.xmark.badge.sparkles") {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 80, height: 80)
+                    .foregroundColor(.accentColor)
+            } else {
+                // Fallback
+                Image(systemName: "app.badge.checkmark")
+                    .font(.system(size: 60))
+                    .foregroundColor(.accentColor)
+            }
             
             Text("AppTidy")
                 .font(.title)
@@ -303,7 +313,7 @@ struct AboutTab: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
-            Text("© 2025")
+            Text("© 2025 sryo")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .padding(.top, 10)
